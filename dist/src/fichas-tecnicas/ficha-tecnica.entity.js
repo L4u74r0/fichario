@@ -32,7 +32,7 @@ __decorate([
     (0, typeorm_1.Column)({
         name: 'archivo_pdf',
         type: 'text',
-        nullable: false
+        nullable: true
     }),
     __metadata("design:type", String)
 ], FichaTecnica.prototype, "archivoPdf", void 0);

@@ -1,4 +1,3 @@
--- Active: 1743038974298@@127.0.0.1@5432@fichario
 -- CREACIÓN DE USUARIOS
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
@@ -9,22 +8,16 @@ CREATE TABLE usuarios (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-SELECT * FROM usuarios;
-
 -- FICHAS TÉCNICAS (Ahora actúan como pedidos)
 CREATE TABLE fichas_tecnicas (
     id SERIAL PRIMARY KEY,
     cliente VARCHAR(100) NOT NULL,  -- Cliente asociado al pedido
-    archivo_pdf TEXT NOT NULL,  -- URL del archivo PDF con toda la información
+    archivo_pdf TEXT NULL,  -- URL del archivo PDF con toda la información
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación de la ficha
     estado VARCHAR(50) CHECK (estado IN ('pendiente', 'diseñando', 'ingresado')) DEFAULT 'pendiente',
     usuario_id INT REFERENCES usuarios(id),  -- Usuario que subió la ficha
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-
-
-
 
 -- PRÁCTICAS (tipo de prenda y cantidad)
 CREATE TABLE prendas (
@@ -78,5 +71,3 @@ CREATE TABLE notificaciones_trabajos (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha y hora de la notificación
     leido BOOLEAN DEFAULT FALSE  -- Si la notificación ha sido leída
 );
-
-SELECT * FROM notificaciones_trabajos;

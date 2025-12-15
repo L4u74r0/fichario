@@ -17,7 +17,7 @@ export class FichaTecnica {
     @Column({ 
         name: 'archivo_pdf',
         type: 'text',
-        nullable: false
+        nullable: true // Permitir valores nulos inicialmente
     })
     archivoPdf: string;
 

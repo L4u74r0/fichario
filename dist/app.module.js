@@ -31,11 +31,11 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forRoot({
-                type: 'postgres',
+                type: 'mssql',
                 host: 'localhost',
-                port: 5432,
-                username: 'postgres',
-                password: 'lautaro700',
+                port: 1433,
+                username: 'sa',
+                password: 'tu_password',
                 database: 'fichario',
                 entities: [
                     usuario_entity_1.Usuario,
@@ -47,6 +47,10 @@ exports.AppModule = AppModule = __decorate([
                     produccion_entity_1.Produccion
                 ],
                 synchronize: true,
+                options: {
+                    encrypt: false,
+                    trustServerCertificate: true,
+                },
             }),
             auth_module_1.AuthModule,
             usuarios_module_1.UsuariosModule,

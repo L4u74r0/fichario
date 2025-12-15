@@ -20,12 +20,12 @@ import { Produccion } from 'src/produccion/produccion.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'postgres',           // Usamos PostgreSQL
-      host: 'localhost',          // Dirección de la base de datos
-      port: 5432,                 // Puerto de PostgreSQL
-      username: 'postgres',     // Tu usuario de PostgreSQL
-      password: 'lautaro700',  // Tu contraseña de PostgreSQL
-      database: 'fichario',       // El nombre de la base de datos
+      type: 'mssql',               // 👈 SQL Server
+      host: 'localhost',
+      port: 1433,                  // Puerto por defecto de SQL Server
+      username: 'sa',              // O el usuario que tengas
+      password: 'tu_password',
+      database: 'fichario',
       entities: [
         Usuario,
         FichaTecnica,
@@ -35,7 +35,11 @@ import { Produccion } from 'src/produccion/produccion.entity';
         Prenda,
         Produccion
       ],
-      synchronize: true,          // Permite sincronizar las tablas automáticamente
+      synchronize: true,
+      options: {
+        encrypt: false,            // true si usás Azure
+        trustServerCertificate: true,
+      },
     }),
     AuthModule,
     UsuariosModule,
