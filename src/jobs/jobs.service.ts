@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from './entities/job.entity';
 import { JobHistory } from './entities/job-history.entity';
-import { CreateJobDto } from './dto/create-job.dto';
+import { CreateJobDto, UpdateJobDto } from './dto/create-job.dto';
+import { NotFoundException } from '@nestjs/common';
+
 
 @Injectable()
 export class JobsService {
@@ -37,5 +39,68 @@ export class JobsService {
 
     return savedJob;
   }
+
+  async findAll() {
+    return this.jobRepository.find({
+      relations: {
+        organization: true,
+        created_by: true,
+        assigned_to: true,
+      },
+      order: {
+        created_at: 'DESC',
+      },
+    });
+  }
+
+  async findOne(id: number) {
+    const job = await this.jobRepository.findOne({
+      where: { id },
+      relations: {
+        organization: true,
+        created_by: true,
+        assigned_to: true,
+      },
+    });
+
+  if (!job) {
+    throw new NotFoundException(`Job ${id} no encontrado`);
+  }
+
+    return job;
+  }
+
+  async update(id: number, updateJobDto: UpdateJobDto) {
+    const job = await this.findOne(id);
+
+    Object.assign(job, updateJobDto);
+
+    return this.jobRepository.save(job);
+  }
+
+    async deleteJob(id: number) {
+  const job = await this.jobRepository.findOne({
+    where: { id },
+    relations: ['history'],
+  });
+
+  if (!job) {
+    throw new NotFoundException('Job no encontrado');
+  }
+
+  // 1️⃣ Borrar historial
+  await this.historyRepository.delete({
+    job: { id },
+  });
+
+  // 2️⃣ Borrar job
+  await this.jobRepository.delete(id);
+
+  return {
+    message: 'Job y su historial eliminados correctamente',
+  };
 }
+
+}
+
 

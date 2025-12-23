@@ -70,6 +70,8 @@ CREATE TABLE jobs (
         FOREIGN KEY (assigned_to) REFERENCES users(id)
 );
 
+SELECT * FROM jobs;
+
 -- assigned_to se completa cuando el trabajo pasa a "recibido"
 
 CREATE TABLE job_files (
