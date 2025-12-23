@@ -1,73 +1,125 @@
--- CREACIÓN DE USUARIOS
-CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    rol VARCHAR(50) CHECK (rol IN ('admin', 'diseñador', 'estampador', 'bordador')) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE DATABASE fichario;
+
+USE fichario;
+
+CREATE TABLE users (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    email NVARCHAR(150) NOT NULL UNIQUE,
+    password NVARCHAR(255) NOT NULL,
+    created_at DATETIME2 DEFAULT SYSDATETIME()
 );
 
--- FICHAS TÉCNICAS (Ahora actúan como pedidos)
-CREATE TABLE fichas_tecnicas (
-    id SERIAL PRIMARY KEY,
-    cliente VARCHAR(100) NOT NULL,  -- Cliente asociado al pedido
-    archivo_pdf TEXT NULL,  -- URL del archivo PDF con toda la información
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación de la ficha
-    estado VARCHAR(50) CHECK (estado IN ('pendiente', 'diseñando', 'ingresado')) DEFAULT 'pendiente',
-    usuario_id INT REFERENCES usuarios(id),  -- Usuario que subió la ficha
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+INSERT INTO users (name, email, password)
+VALUES ('Admin Test', 'admin@test.com', 'admin123');
+
+SELECT * FROM users;
+
+ -- (empresas, talleres)
+CREATE TABLE organizations (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(150) NOT NULL,
+    industry_type NVARCHAR(100) NOT NULL,
+    created_at DATETIME2 DEFAULT SYSDATETIME()
 );
 
--- PRÁCTICAS (tipo de prenda y cantidad)
-CREATE TABLE prendas (
-    id SERIAL PRIMARY KEY,
-    ficha_tecnica_id INT REFERENCES fichas_tecnicas(id) ON DELETE CASCADE,
-    tipo VARCHAR(50) NOT NULL,  -- Camiseta, buzo, etc.
-    cantidad INT NOT NULL CHECK (cantidad > 0)
+INSERT INTO organizations (name, industry_type)
+VALUES ('Fichar SRL', 'Textil');
+
+SELECT * FROM organizations;
+
+
+CREATE TABLE organization_users (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    organization_id INT NOT NULL,
+    role NVARCHAR(50) NOT NULL,
+    created_at DATETIME2 DEFAULT SYSDATETIME(),
+
+    CONSTRAINT fk_org_users_user
+        FOREIGN KEY (user_id) REFERENCES users(id),
+
+    CONSTRAINT fk_org_users_org
+        FOREIGN KEY (organization_id) REFERENCES organizations(id),
+
+    CONSTRAINT uq_user_org UNIQUE (user_id, organization_id)
 );
 
--- PRODUCCIÓN (estado y seguimiento del progreso de la producción)
-CREATE TABLE produccion (
-    id SERIAL PRIMARY KEY,
-    ficha_tecnica_id INT REFERENCES fichas_tecnicas(id) ON DELETE CASCADE,
-    empleado_id INT REFERENCES usuarios(id),
-    estado VARCHAR(50) CHECK (estado IN ('esperando', 'en proceso', 'completado')) DEFAULT 'esperando',
-    fecha_inicio TIMESTAMP,
-    fecha_fin TIMESTAMP,
-    notas TEXT
+
+
+-- Un usuario no puede repetirse en la misma empresa
+
+CREATE TABLE jobs (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    organization_id INT NOT NULL,
+    title NVARCHAR(150) NOT NULL,
+    description NVARCHAR(MAX),
+    status NVARCHAR(30) NOT NULL DEFAULT 'created',
+    created_by INT NOT NULL,
+    assigned_to INT NULL,
+    created_at DATETIME2 DEFAULT SYSDATETIME(),
+    updated_at DATETIME2 DEFAULT SYSDATETIME(),
+
+    CONSTRAINT fk_jobs_org
+        FOREIGN KEY (organization_id) REFERENCES organizations(id),
+
+    CONSTRAINT fk_jobs_created_by
+        FOREIGN KEY (created_by) REFERENCES users(id),
+
+    CONSTRAINT fk_jobs_assigned_to
+        FOREIGN KEY (assigned_to) REFERENCES users(id)
 );
 
--- MENSAJES ENTRE USUARIOS
-CREATE TABLE mensajes (
-    id SERIAL PRIMARY KEY,
-    remitente_id INT REFERENCES usuarios(id) ON DELETE CASCADE,  -- Usuario que envía el mensaje
-    destinatario_id INT REFERENCES usuarios(id) ON DELETE CASCADE,  -- Usuario que recibe el mensaje
-    mensaje TEXT NOT NULL,  -- Contenido del mensaje
-    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha y hora de envío
-    estado VARCHAR(50) CHECK (estado IN ('pendiente', 'leído')) DEFAULT 'pendiente',  -- Estado del mensaje
-    tipo_consulta VARCHAR(50) CHECK (tipo_consulta IN ('diseño', 'producción', 'administración')) NOT NULL,  -- Sector al que va dirigido
-    respondedido BOOLEAN DEFAULT FALSE,  -- Indicador de si el mensaje ha sido respondido
-    respuesta TEXT,  -- Respuesta al mensaje, si corresponde
-    fecha_respuesta TIMESTAMP  -- Fecha de respuesta, si corresponde
+-- assigned_to se completa cuando el trabajo pasa a "recibido"
+
+CREATE TABLE job_files (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    job_id INT NOT NULL,
+    file_name NVARCHAR(255) NOT NULL,
+    file_url NVARCHAR(500) NOT NULL,
+    file_type NVARCHAR(50),
+    uploaded_by INT NOT NULL,
+    uploaded_at DATETIME2 DEFAULT SYSDATETIME(),
+
+    CONSTRAINT fk_job_files_job
+        FOREIGN KEY (job_id) REFERENCES jobs(id),
+
+    CONSTRAINT fk_job_files_user
+        FOREIGN KEY (uploaded_by) REFERENCES users(id)
 );
 
--- NOTIFICACIONES PARA MENSAJES
-CREATE TABLE notificaciones_mensajes (
-    id SERIAL PRIMARY KEY,
-    usuario_id INT REFERENCES usuarios(id) ON DELETE CASCADE,  -- Usuario que recibirá la notificación
-    mensaje_id INT REFERENCES mensajes(id) ON DELETE CASCADE,  -- Mensaje asociado
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha y hora de la notificación
-    leido BOOLEAN DEFAULT FALSE  -- Si la notificación ha sido leída
+-- Comentarios, problemas, observaciones
+CREATE TABLE job_comments (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    job_id INT NOT NULL,
+    user_id INT NOT NULL,
+    message NVARCHAR(MAX) NOT NULL,
+    created_at DATETIME2 DEFAULT SYSDATETIME(),
+
+    CONSTRAINT fk_job_comments_job
+        FOREIGN KEY (job_id) REFERENCES jobs(id),
+
+    CONSTRAINT fk_job_comments_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- NOTIFICACIONES PARA CAMBIOS EN EL ESTADO DE LOS TRABAJOS
-CREATE TABLE notificaciones_trabajos (
-    id SERIAL PRIMARY KEY,
-    usuario_id INT REFERENCES usuarios(id) ON DELETE CASCADE,  -- Usuario que recibirá la notificación
-    tipo VARCHAR(50) CHECK (tipo IN ('trabajo_ingresado', 'trabajo_completado')) NOT NULL,  -- Tipo de notificación
-    ficha_numero INT NOT NULL,  -- Número de la ficha asociada
-    usuario_nombre VARCHAR(100) NOT NULL,  -- Nombre del usuario que realizó la acción
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha y hora de la notificación
-    leido BOOLEAN DEFAULT FALSE  -- Si la notificación ha sido leída
+CREATE TABLE job_history (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    job_id INT NOT NULL,
+    action NVARCHAR(50) NOT NULL,
+    old_status NVARCHAR(30),
+    new_status NVARCHAR(30),
+    performed_by INT NOT NULL,
+    comment NVARCHAR(255),
+    created_at DATETIME2 DEFAULT SYSDATETIME(),
+
+    CONSTRAINT fk_job_history_job
+        FOREIGN KEY (job_id) REFERENCES jobs(id),
+
+    CONSTRAINT fk_job_history_user
+        FOREIGN KEY (performed_by) REFERENCES users(id)
 );
+
+
+SELECT * FROM organizations;
+SELECT * FROM users;
