@@ -7,7 +7,7 @@ import {
   Unique,
   JoinColumn,
 } from 'typeorm';
-import { User } from '../../users/users.entity';
+import { User } from '../../users/entities/users.entity';
 import { Organization } from './organization.entity';
 
 @Entity('organization_users')
@@ -22,9 +22,9 @@ export class OrganizationUser {
   @Column()
   organization_id: number;
 
-  @ManyToOne(() => User, user => user.organizations, { onDelete: 'CASCADE' })
+/*   @ManyToOne(() => User, user => user.organizations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: User; */
 
   @ManyToOne(() => Organization, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organization_id' })

@@ -11,6 +11,9 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const jobs_module_1 = require("./jobs/jobs.module");
 const organizations_module_1 = require("./organizations/organizations.module");
+const users_module_1 = require("./users/entities/users.module");
+const auth_module_1 = require("./auth/auth.module");
+const roles_module_1 = require("./roles/roles.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -32,8 +35,11 @@ exports.AppModule = AppModule = __decorate([
                     trustServerCertificate: true,
                 },
             }),
+            users_module_1.UsersModule,
             organizations_module_1.OrganizationsModule,
             jobs_module_1.JobsModule,
+            auth_module_1.AuthModule,
+            roles_module_1.RolesModule,
         ],
     })
 ], AppModule);

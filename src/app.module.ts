@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobsModule } from './jobs/jobs.module';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { UsersModule } from './users/entities/users.module';
+import { AuthModule } from './auth/auth.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -19,10 +22,13 @@ import { OrganizationsModule } from './organizations/organizations.module';
       encrypt: false,
       trustServerCertificate: true,
     },
-}),
-
+    }),
+    UsersModule,
     OrganizationsModule,
     JobsModule,
+    AuthModule,
+    RolesModule,
   ],
 })
 export class AppModule {}
+

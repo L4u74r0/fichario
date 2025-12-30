@@ -7,7 +7,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { User } from '../../users/users.entity';
+import { User } from '../../users/entities/users.entity';
 import { JobHistory } from './job-history.entity';
 import { Organization } from '../../organizations/entities/organization.entity';
 
@@ -31,12 +31,12 @@ export class Job {
   organization: Organization;
 
   // ───────── Created by ─────────
-  @ManyToOne(() => User, user => user.createdJobs)
+  @ManyToOne(() => User, user => user.created_jobs)
   @JoinColumn({ name: 'created_by' })
   created_by: User;
 
   // ───────── Assigned to ─────────
-  @ManyToOne(() => User, user => user.assignedJobs, { nullable: true })
+  @ManyToOne(() => User, user => user.assigned_jobs, { nullable: true })
   @JoinColumn({ name: 'assigned_to' })
   assigned_to: User;
 

@@ -1,20 +1,13 @@
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
+
 export class CreateJobDto {
+  @IsString()
   title: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
+
+  @IsInt()
   organization_id: number;
-  created_by: number;
-}
-export class UpdateJobDto {
-  @IsOptional()
-  @IsString()
-  title?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsIn(['created', 'in_progress', 'completed'])
-  status?: string;
 }

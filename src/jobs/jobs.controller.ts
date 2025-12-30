@@ -1,16 +1,32 @@
-import { Controller, Post, Get, Param, Patch, Body, Delete, } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Patch,
+  Body,
+  Delete,
+} from '@nestjs/common';
 import { JobsService } from './jobs.service';
-import { CreateJobDto, UpdateJobDto,} from './dto/create-job.dto';
-import { Job } from './entities/job.entity';
+import { CreateJobDto } from './dto/create-job.dto';
+import { UpdateJobDto } from './dto/update-job.dto';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Req } from '@nestjs/common';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('jobs')
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Post()
-  async create(@Body() createJobDto: CreateJobDto): Promise<Job> {
-    return this.jobsService.create(createJobDto);
+  create(
+    @Body() dto: CreateJobDto,
+    @Req() req
+  ) {
+    return this.jobsService.create(dto, req.user.id);
   }
+
 
   @Get()
   findAll() {
@@ -19,7 +35,7 @@ export class JobsController {
 
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.jobsService.findOne(id);
+    return this.jobsService.findOne(+id);
   }
 
   @Patch(':id')
@@ -27,7 +43,7 @@ export class JobsController {
     @Param('id') id: number,
     @Body() updateJobDto: UpdateJobDto,
   ) {
-    return this.jobsService.update(id, updateJobDto);
+    return this.jobsService.update(+id, updateJobDto);
   }
 
   @Delete(':id')

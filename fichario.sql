@@ -2,6 +2,8 @@ CREATE DATABASE fichario;
 
 USE fichario;
 
+---------------- USUARIOS --------------------
+
 CREATE TABLE users (
     id INT IDENTITY(1,1) PRIMARY KEY,
     name NVARCHAR(100) NOT NULL,
@@ -14,6 +16,8 @@ INSERT INTO users (name, email, password)
 VALUES ('Admin Test', 'admin@test.com', 'admin123');
 
 SELECT * FROM users;
+
+-------------- EMPRESAS -----------------------
 
  -- (empresas, talleres)
 CREATE TABLE organizations (
@@ -28,6 +32,7 @@ VALUES ('Fichar SRL', 'Textil');
 
 SELECT * FROM organizations;
 
+------------- USUARIOS DE EMPRESA -------------------
 
 CREATE TABLE organization_users (
     id INT IDENTITY(1,1) PRIMARY KEY,
@@ -44,10 +49,9 @@ CREATE TABLE organization_users (
 
     CONSTRAINT uq_user_org UNIQUE (user_id, organization_id)
 );
-
-
-
 -- Un usuario no puede repetirse en la misma empresa
+
+------------------ TRABAJOS --------------------
 
 CREATE TABLE jobs (
     id INT IDENTITY(1,1) PRIMARY KEY,
@@ -71,8 +75,9 @@ CREATE TABLE jobs (
 );
 
 SELECT * FROM jobs;
-
 -- assigned_to se completa cuando el trabajo pasa a "recibido"
+
+------------------ ARCHIVOS --------------------
 
 CREATE TABLE job_files (
     id INT IDENTITY(1,1) PRIMARY KEY,
@@ -90,6 +95,8 @@ CREATE TABLE job_files (
         FOREIGN KEY (uploaded_by) REFERENCES users(id)
 );
 
+------------------ COMENTARIOS --------------------
+
 -- Comentarios, problemas, observaciones
 CREATE TABLE job_comments (
     id INT IDENTITY(1,1) PRIMARY KEY,
@@ -105,13 +112,16 @@ CREATE TABLE job_comments (
         FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+------------------ HISTORIAL --------------------
+
 CREATE TABLE job_history (
     id INT IDENTITY(1,1) PRIMARY KEY,
     job_id INT NOT NULL,
     action NVARCHAR(50) NOT NULL,
-    old_status NVARCHAR(30),
-    new_status NVARCHAR(30),
-    performed_by INT NOT NULL,
+    field NVARCHAR(50) NOT NULL,
+    old_value NVARCHAR(255),
+    new_value NVARCHAR(255),
+    performed_by INT NULL,
     comment NVARCHAR(255),
     created_at DATETIME2 DEFAULT SYSDATETIME(),
 
@@ -122,6 +132,19 @@ CREATE TABLE job_history (
         FOREIGN KEY (performed_by) REFERENCES users(id)
 );
 
+--------------- ROLES -----------------
+
+CREATE TABLE roles (
+  id INT PRIMARY KEY IDENTITY,
+  name VARCHAR(50) NOT NULL
+);
+
+ALTER TABLE users
+ADD role_id INT;
+
+ALTER TABLE users
+ADD CONSTRAINT fk_users_roles
+FOREIGN KEY (role_id) REFERENCES roles(id);
 
 SELECT * FROM organizations;
 SELECT * FROM users;

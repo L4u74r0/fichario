@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from './entities/job.entity';
 import { JobHistory } from './entities/job-history.entity';
-import { CreateJobDto, UpdateJobDto } from './dto/create-job.dto';
 import { NotFoundException } from '@nestjs/common';
+import { CreateJobDto } from './dto/create-job.dto';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 
 @Injectable()
@@ -17,35 +18,37 @@ export class JobsService {
     private readonly historyRepository: Repository<JobHistory>,
   ) {}
 
-  async create(dto: CreateJobDto): Promise<Job> {
+  async create(dto: CreateJobDto, userId: number) {
     const job = this.jobRepository.create({
       title: dto.title,
       description: dto.description,
-      status: 'created',
-      organization: { id: dto.organization_id },
-      created_by: { id: dto.created_by },
+      organization: { id: dto.organization_id } as any,
+      created_by: { id: userId } as any,
     });
 
     const savedJob = await this.jobRepository.save(job);
 
-    const history = this.historyRepository.create({
+    await this.historyRepository.save({
       job: savedJob,
       action: 'created',
-      new_status: 'created',
-      performed_by: { id: dto.created_by },
+      field: 'job',
+      old_value: null,
+      new_value: 'created',
+      performed_by: { id: userId } as any,
     });
-
-    await this.historyRepository.save(history);
 
     return savedJob;
   }
 
-  async findAll() {
+  async findAll(): Promise<Job[]> {
     return this.jobRepository.find({
       relations: {
         organization: true,
         created_by: true,
         assigned_to: true,
+        history: {
+          performed_by: true,
+        },
       },
       order: {
         created_at: 'DESC',
@@ -63,44 +66,68 @@ export class JobsService {
       },
     });
 
-  if (!job) {
-    throw new NotFoundException(`Job ${id} no encontrado`);
-  }
+    if (!job) {
+      throw new NotFoundException(`Job ${id} no encontrado`);
+    }
 
     return job;
   }
 
   async update(id: number, updateJobDto: UpdateJobDto) {
-    const job = await this.findOne(id);
+    const job = await this.jobRepository.findOne({
+      where: { id },
+      relations: ['assigned_to', 'created_by'],
+    });
 
-    Object.assign(job, updateJobDto);
+    if (!job) {
+      throw new NotFoundException(`Job ${id} no encontrado`);
+    }
+
+    if (
+      updateJobDto.status &&
+      updateJobDto.status !== job.status
+    ) {
+      await this.historyRepository.save({
+        job,
+        action: 'updated',
+        field: 'status',
+        old_value: job.status,
+        new_value: updateJobDto.status,
+        performed_by: { id: job.created_by.id } as any,
+      });
+
+      job.status = updateJobDto.status;
+    }
+
+    if (
+      updateJobDto.assigned_to &&
+      updateJobDto.assigned_to !== job.assigned_to?.id
+    ) {
+      await this.historyRepository.save({
+        job,
+        action: 'updated',
+        field: 'assigned_to',
+        old_value: job.assigned_to?.id?.toString() ?? null,
+        new_value: updateJobDto.assigned_to.toString(),
+        performed_by: { id: job.created_by.id } as any,
+      });
+
+      job.assigned_to = { id: updateJobDto.assigned_to } as any;
+    }
 
     return this.jobRepository.save(job);
   }
 
-    async deleteJob(id: number) {
-  const job = await this.jobRepository.findOne({
-    where: { id },
-    relations: ['history'],
-  });
+  async deleteJob(id: number) {
+    const job = await this.jobRepository.findOneBy({ id });
 
-  if (!job) {
-    throw new NotFoundException('Job no encontrado');
+    if (!job) {
+      throw new NotFoundException(`Job ${id} no encontrado`);
+    }
+
+    return this.jobRepository.delete(id);
   }
-
-  // 1️⃣ Borrar historial
-  await this.historyRepository.delete({
-    job: { id },
-  });
-
-  // 2️⃣ Borrar job
-  await this.jobRepository.delete(id);
-
-  return {
-    message: 'Job y su historial eliminados correctamente',
-  };
 }
 
-}
 
 

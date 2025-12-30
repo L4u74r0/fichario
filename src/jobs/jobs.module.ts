@@ -5,7 +5,7 @@ import { JobsService } from './jobs.service';
 import { JobsController } from './jobs.controller';
 import { Job } from './entities/job.entity';
 import { JobHistory } from './entities/job-history.entity';
-import { User } from '../users/users.entity'; // 👈 IMPORTANTE
+import { User } from '../users/entities/users.entity'; // 👈 IMPORTANTE
 
 @Module({
   imports: [
