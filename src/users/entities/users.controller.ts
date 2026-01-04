@@ -1,6 +1,8 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, UseGuards, Param} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { OnboardingUserDto } from '../dto/onboarding-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -20,4 +22,15 @@ export class UsersController {
   findOne(@Param('id') id: number) {
     return this.usersService.findOne(+id);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+    @Post('onboarding')
+    async onboarding(
+      @Req() req,
+      @Body() dto: OnboardingUserDto,
+    ) 
+    {
+    return this.usersService.onboarding(req.user.id, dto);
+    }
+
 }

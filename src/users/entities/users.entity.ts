@@ -11,7 +11,7 @@ import { OrganizationUser } from '../../organizations/entities/organization-user
 import { Job } from '../../jobs/entities/job.entity';
 /* import { JobComment } from '../jobs/entities/job-comment.entity'; */
 import { JobHistory } from '../../jobs/entities/job-history.entity';
-import { Role } from '../../roles/role.entity';
+import { roles } from '../../roles/role.entity';
 
 @Entity('users')
 export class User {
@@ -42,7 +42,12 @@ export class User {
   @OneToMany(() => JobHistory, (history) => history.performed_by)
   history: JobHistory[];
 
-  @ManyToOne(() => Role, role => role.users)
+ /*  @ManyToOne(() => Role, role => role.users)
   @JoinColumn({ name: 'role_id' })
-  role: Role;
+  role: roles; */
+
+  @ManyToOne(() => roles, { nullable: false })
+    @JoinColumn({ name: 'role_id' })
+    role: roles;
+
 }

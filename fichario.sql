@@ -139,8 +139,8 @@ CREATE TABLE roles (
   name VARCHAR(50) NOT NULL
 );
 
-ALTER TABLE users
-ADD role_id INT;
+UPDATE users
+SET role_id = 1 WHERE id = 3 ;
 
 ALTER TABLE users
 ADD CONSTRAINT fk_users_roles
@@ -148,3 +148,7 @@ FOREIGN KEY (role_id) REFERENCES roles(id);
 
 SELECT * FROM organizations;
 SELECT * FROM users;
+SELECT * FROM roles;
+
+INSERT INTO roles (name)
+VALUES ('PENDING');
