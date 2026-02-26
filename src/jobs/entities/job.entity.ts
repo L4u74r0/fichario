@@ -6,13 +6,15 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/users.entity';
 import { JobHistory } from './job-history.entity';
 import { Organization } from '../../organizations/entities/organization.entity';
+import { BaseAuditEntity } from '../../common/entities/base-audit.entity';
 
 @Entity('jobs')
-export class Job {
+export class Job extends BaseAuditEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -30,11 +32,6 @@ export class Job {
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
-  // ───────── Created by ─────────
-  @ManyToOne(() => User, user => user.created_jobs)
-  @JoinColumn({ name: 'created_by' })
-  created_by: User;
-
   // ───────── Assigned to ─────────
   @ManyToOne(() => User, user => user.assigned_jobs, { nullable: true })
   @JoinColumn({ name: 'assigned_to' })
@@ -43,7 +40,5 @@ export class Job {
   // ───────── History ─────────
   @OneToMany(() => JobHistory, history => history.job)
   history: JobHistory[];
-
-  @CreateDateColumn()
-  created_at: Date;
 }
+

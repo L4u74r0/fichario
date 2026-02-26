@@ -17,6 +17,9 @@ VALUES ('Admin Test', 'admin@test.com', 'admin123');
 
 SELECT * FROM users;
 
+SELECT * FROM users WHERE id=16;
+DELETE users;
+
 -------------- EMPRESAS -----------------------
 
  -- (empresas, talleres)
@@ -34,21 +37,21 @@ SELECT * FROM organizations;
 
 ------------- USUARIOS DE EMPRESA -------------------
 
-CREATE TABLE organization_users (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    user_id INT NOT NULL,
-    organization_id INT NOT NULL,
-    role NVARCHAR(50) NOT NULL,
-    created_at DATETIME2 DEFAULT SYSDATETIME(),
+--CREATE TABLE organization_users (
+--    id INT IDENTITY(1,1) PRIMARY KEY,
+--    user_id INT NOT NULL,
+--    organization_id INT NOT NULL,
+--    role NVARCHAR(50) NOT NULL,
+--    created_at DATETIME2 DEFAULT SYSDATETIME(),
 
-    CONSTRAINT fk_org_users_user
-        FOREIGN KEY (user_id) REFERENCES users(id),
+--    CONSTRAINT fk_org_users_user
+--        FOREIGN KEY (user_id) REFERENCES users(id),
 
-    CONSTRAINT fk_org_users_org
-        FOREIGN KEY (organization_id) REFERENCES organizations(id),
+--    CONSTRAINT fk_org_users_org
+--        FOREIGN KEY (organization_id) REFERENCES organizations(id),
 
-    CONSTRAINT uq_user_org UNIQUE (user_id, organization_id)
-);
+--    CONSTRAINT uq_user_org UNIQUE (user_id, organization_id)
+--);
 -- Un usuario no puede repetirse en la misma empresa
 
 ------------------ TRABAJOS --------------------
@@ -63,6 +66,8 @@ CREATE TABLE jobs (
     assigned_to INT NULL,
     created_at DATETIME2 DEFAULT SYSDATETIME(),
     updated_at DATETIME2 DEFAULT SYSDATETIME(),
+	deleted_at DATETIME2 NULL
+	updated_by INT NULL
 
     CONSTRAINT fk_jobs_org
         FOREIGN KEY (organization_id) REFERENCES organizations(id),
@@ -71,8 +76,18 @@ CREATE TABLE jobs (
         FOREIGN KEY (created_by) REFERENCES users(id),
 
     CONSTRAINT fk_jobs_assigned_to
-        FOREIGN KEY (assigned_to) REFERENCES users(id)
+        FOREIGN KEY (assigned_to) REFERENCES users(id),
+
+	CONSTRAINT  fk_jobs_updated_by
+		FOREIGN KEY (updated_by) REFERENCES users(id)
 );
+
+ALTER TABLE jobs
+ADD updated_by INT NULL;
+
+ALTER TABLE jobs
+ADD CONSTRAINT  fk_jobs_updated_by
+FOREIGN KEY (updated_by) REFERENCES users(id);
 
 SELECT * FROM jobs;
 -- assigned_to se completa cuando el trabajo pasa a "recibido"
@@ -139,16 +154,9 @@ CREATE TABLE roles (
   name VARCHAR(50) NOT NULL
 );
 
-UPDATE users
-SET role_id = 1 WHERE id = 3 ;
-
-ALTER TABLE users
-ADD CONSTRAINT fk_users_roles
-FOREIGN KEY (role_id) REFERENCES roles(id);
-
-SELECT * FROM organizations;
-SELECT * FROM users;
 SELECT * FROM roles;
 
-INSERT INTO roles (name)
-VALUES ('PENDING');
+
+
+
+

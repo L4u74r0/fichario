@@ -1,7 +1,8 @@
 export enum RolesList {
-  ADMIN = 'admin',
-  DESIGNER = 'designer',
-  PRODUCTION = 'production',
-  PENDING = 'pending',
+  ADMIN = 'Administrador',
+  DESIGNER = 'Diseñador',
+  PRODUCTION = 'Producción',
+  PENDING = 'Pendiente',
+  EMPLOYEE = 'Empleado',
 }
 

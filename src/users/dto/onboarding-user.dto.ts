@@ -1,4 +1,11 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum, 
+  IsOptional,
+  IsString,
+  IsInt, 
+  ValidateIf,
+  IsNotEmpty,
+} from 'class-validator';
 
 export enum OnboardingType {
   OWNER = 'owner',
@@ -9,12 +16,19 @@ export class OnboardingUserDto {
   @IsEnum(OnboardingType)
   type: OnboardingType;
 
-  // solo si es empleado
+  // OWNER
+  @ValidateIf(o => o.type === OnboardingType.OWNER)
+  @IsString()
+  @IsNotEmpty()
+  organizationName?: string;
+  
+  @ValidateIf(o => o.type === OnboardingType.OWNER)
   @IsOptional()
   @IsString()
-  roleName?: string; // ejemplo: 'designer', 'production'
+  industryType?: string;
 
-  @IsOptional()
-  @IsString()
-  organizationCode?: string;
+  // EMPLOYEE
+  @ValidateIf(o => o.type === OnboardingType.EMPLOYEE)
+  @IsInt()
+  organizationId?: number;
 }

@@ -13,24 +13,27 @@ export class UsersController {
     return this.usersService.create(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  me(@Req() req) {
+    return req.user;
   }
 
+  
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.usersService.findOne(+id);
   }
 
   @UseGuards(AuthGuard('jwt'))
-    @Post('onboarding')
-    async onboarding(
-      @Req() req,
-      @Body() dto: OnboardingUserDto,
-    ) 
-    {
+  @Post('onboarding')
+    onboarding(
+  @Req() req, @Body() dto: OnboardingUserDto,) {
     return this.usersService.onboarding(req.user.id, dto);
-    }
+  }
 
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
 }

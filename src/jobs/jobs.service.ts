@@ -18,11 +18,11 @@ export class JobsService {
     private readonly historyRepository: Repository<JobHistory>,
   ) {}
 
-  async create(dto: CreateJobDto, userId: number) {
+  async create(dto: CreateJobDto, userId: number, organizationId: number) {
     const job = this.jobRepository.create({
       title: dto.title,
       description: dto.description,
-      organization: { id: dto.organization_id } as any,
+      organization: { id: organizationId } as any,
       created_by: { id: userId } as any,
     });
 
@@ -67,20 +67,20 @@ export class JobsService {
     });
 
     if (!job) {
-      throw new NotFoundException(`Job ${id} no encontrado`);
+      throw new NotFoundException(`Trabajo número ${id} no encontrado`);
     }
 
     return job;
   }
 
-  async update(id: number, updateJobDto: UpdateJobDto) {
+  async update(id: number, updateJobDto: UpdateJobDto, userId: number) {
     const job = await this.jobRepository.findOne({
       where: { id },
       relations: ['assigned_to', 'created_by'],
     });
 
     if (!job) {
-      throw new NotFoundException(`Job ${id} no encontrado`);
+      throw new NotFoundException(`Trabajo no encontrado`);
     }
 
     if (
@@ -115,19 +115,24 @@ export class JobsService {
       job.assigned_to = { id: updateJobDto.assigned_to } as any;
     }
 
+    Object.assign(job, updateJobDto);
+    job.updated_by = { id: userId } as any;
+
     return this.jobRepository.save(job);
   }
 
   async deleteJob(id: number) {
-    const job = await this.jobRepository.findOneBy({ id });
-
+    const job = await 
+    this.jobRepository.findOne({ 
+      where: { id } 
+    });
+    
     if (!job) {
-      throw new NotFoundException(`Job ${id} no encontrado`);
+      throw new NotFoundException(`Trabajo no encontrado`);
     }
-
-    return this.jobRepository.delete(id);
+    
+    await this.jobRepository.softDelete(id);
+    
+    return { message: `Trabajo ${id} eliminado correctamente (soft delete)`};
   }
 }
-
-
-

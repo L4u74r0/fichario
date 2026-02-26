@@ -6,6 +6,7 @@ import { User } from "./users.entity";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { roles } from "../../roles/role.entity";
 import { OnboardingUserDto, OnboardingType } from '../dto/onboarding-user.dto';
+import { Organization } from "src/organizations/entities/organization.entity";
 
 
 @Injectable()
@@ -15,7 +16,10 @@ export class UsersService {
     private readonly userRepository: Repository<User>
     ,
     @InjectRepository(roles)
-    private readonly roleRepository: Repository<roles>,
+    private readonly roleRepository: Repository<roles>
+    ,
+    @InjectRepository(Organization)
+    private readonly organizationsRepository: Repository<Organization>,
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
@@ -31,7 +35,7 @@ export class UsersService {
 
   // 👉 buscar rol PENDING
   const pendingRole = await this.roleRepository.findOne({
-    where: { name: 'PENDING' },
+    where: { name: 'Pending' },
   });
 
   if (!pendingRole) {
@@ -74,6 +78,7 @@ export class UsersService {
       where: { email },
       relations: {
         role: true,
+        organization: true,
       },
     });
   }
@@ -81,37 +86,81 @@ export class UsersService {
   async onboarding(userId: number, dto: OnboardingUserDto) {
   const user = await this.userRepository.findOne({
     where: { id: userId },
-    relations: ['role'],
+    relations: ['role', 'organization'],
   });
 
-  if (!user) throw new BadRequestException('Usuario no encontrado');
-
-  if (user.role?.name !== 'pending') {
-    throw new ForbiddenException('Onboarding ya completado');
+  if (!user) {
+    throw new BadRequestException('Usuario no encontrado');
   }
 
+  if (user.role.name !== 'Pending') {
+    throw new BadRequestException('El usuario ya completó el onboarding');
+  }
+
+  // ───────── OWNER ─────────
   if (dto.type === OnboardingType.OWNER) {
-    const adminRole = await this.roleRepository.findOne({
-      where: { name: 'admin' },
-    });
-
-    user.role = adminRole;
-  }
-
-  if (dto.type === OnboardingType.EMPLOYEE) {
-    if (!dto.roleName || dto.roleName === 'admin') {
-      throw new BadRequestException('Rol inválido');
+    if (!dto.organizationName) {
+      throw new BadRequestException('Nombre de organización requerido');
     }
 
-    const role = await this.roleRepository.findOne({
-      where: { name: dto.roleName },
+    const adminRole = await this.roleRepository.findOne({
+      where: { name: 'Administrador' },
     });
 
-    if (!role) throw new BadRequestException('Rol no existe');
+    if (!adminRole) {
+      throw new BadRequestException('Rol admin no encontrado');
+    }
 
-    user.role = role;
+    const organization = this.organizationsRepository.create({
+      name: dto.organizationName,
+      industryType: dto.industryType,
+    });
+
+    await this.organizationsRepository.save(organization);
+
+    user.role = adminRole;
+    user.organization = organization;
+
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Onboarding OWNER completado',
+      organizationId: organization.id,
+    };
   }
 
-  return this.userRepository.save(user);
-}
+  // EMPLOYEE
+  // EMPLOYEE
+if (dto.type === OnboardingType.EMPLOYEE) {
+  if (!dto.organizationId) {
+    throw new BadRequestException(
+      'Un empleado debe enviar organizationId',
+    );
+    }
+
+    const organization = await this.organizationsRepository.findOne({
+      where: { id: dto.organizationId },
+    });
+
+    if (!organization) {
+      throw new BadRequestException('Organización no encontrada');
+    }
+
+    const employeeRole = await this.roleRepository.findOne({
+      where: { name: 'Empleado' },
+    });
+
+      user.role = employeeRole;
+      user.organization = organization;
+
+      await this.userRepository.save(user);
+
+      return {
+        message: 'Onboarding EMPLOYEE completado',
+        organizationId: organization.id,
+      };
+    }
+
+    return this.userRepository.save(user);
+  }
 }

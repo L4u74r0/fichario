@@ -4,10 +4,6 @@ export class CreateJobDto {
   @IsString()
   title: string;
 
-  @IsOptional()
   @IsString()
   description?: string;
-
-  @IsInt()
-  organization_id: number;
 }

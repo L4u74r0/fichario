@@ -2,29 +2,30 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   OneToMany,
+  CreateDateColumn,
 } from 'typeorm';
-import { OrganizationUser } from './organization-user.entity';
 import { Job } from '../../jobs/entities/job.entity';
+import { User } from '../../users/entities/users.entity';
 
 @Entity('organizations')
 export class Organization {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 150 })
+  @Column()
   name: string;
 
-  @Column({ length: 100 })
-  industry_type: string;
+  @Column({ name: 'industry_type' })
+  industryType: string;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @OneToMany(() => User, user => user.organization)
+  users: User[];
 
-  @OneToMany(() => OrganizationUser, ou => ou.organization)
-  users: OrganizationUser[];
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
   @OneToMany(() => Job, job => job.organization)
   jobs: Job[];
 }
+  

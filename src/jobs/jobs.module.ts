@@ -5,14 +5,14 @@ import { JobsService } from './jobs.service';
 import { JobsController } from './jobs.controller';
 import { Job } from './entities/job.entity';
 import { JobHistory } from './entities/job-history.entity';
-import { User } from '../users/entities/users.entity'; // 👈 IMPORTANTE
+import { User } from '../users/entities/users.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Job,
       JobHistory,
-      User, // 👈 ESTA LÍNEA ARREGLA TODO
+      User,
     ]),
   ],
   controllers: [JobsController],

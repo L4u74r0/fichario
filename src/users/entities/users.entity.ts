@@ -7,11 +7,12 @@ import {
   OneToMany,
   ManyToOne,
 } from 'typeorm';
-import { OrganizationUser } from '../../organizations/entities/organization-user.entity';
+/* import { OrganizationUser } from '../../organizations/entities/organization-user.entity'; */
 import { Job } from '../../jobs/entities/job.entity';
 /* import { JobComment } from '../jobs/entities/job-comment.entity'; */
 import { JobHistory } from '../../jobs/entities/job-history.entity';
 import { roles } from '../../roles/role.entity';
+import { Organization } from 'src/organizations/entities/organization.entity';
 
 @Entity('users')
 export class User {
@@ -42,12 +43,11 @@ export class User {
   @OneToMany(() => JobHistory, (history) => history.performed_by)
   history: JobHistory[];
 
- /*  @ManyToOne(() => Role, role => role.users)
-  @JoinColumn({ name: 'role_id' })
-  role: roles; */
-
   @ManyToOne(() => roles, { nullable: false })
     @JoinColumn({ name: 'role_id' })
     role: roles;
 
+  @ManyToOne(() => Organization, { nullable: true })
+    @JoinColumn({ name: 'organization_id' })
+    organization: Organization | null;
 }
