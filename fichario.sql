@@ -129,23 +129,28 @@ CREATE TABLE job_comments (
 
 ------------------ HISTORIAL --------------------
 
+DROP TABLE job_history;
+
 CREATE TABLE job_history (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    job_id INT NOT NULL,
-    action NVARCHAR(50) NOT NULL,
-    field NVARCHAR(50) NOT NULL,
-    old_value NVARCHAR(255),
-    new_value NVARCHAR(255),
-    performed_by INT NULL,
-    comment NVARCHAR(255),
-    created_at DATETIME2 DEFAULT SYSDATETIME(),
+	id INT IDENTITY(1,1) PRIMARY KEY,
+	job_id INT NOT NULL,
+	action NVARCHAR(30) NOT NULL,
+	previous_status NVARCHAR(30) NULL,
+	changed_by INT NOT NULL,
+	created_at DATETIME2 DEFAULT SYSDATETIME(),
+	new_status NVARCHAR(30) NULL,
 
-    CONSTRAINT fk_job_history_job
-        FOREIGN KEY (job_id) REFERENCES jobs(id),
+	CONSTRAINT fk_history_job
+		FOREIGN KEY (job_id) REFERENCES jobs(id),
 
-    CONSTRAINT fk_job_history_user
-        FOREIGN KEY (performed_by) REFERENCES users(id)
+	CONSTRAINT fk_history_user
+		FOREIGN KEY (changed_by) REFERENCES users(id)
 );
+
+SELECT * FROM job_history;
+
+ALTER TABLE job_history
+ADD new_status NVARCHAR(30) NULL;
 
 --------------- ROLES -----------------
 

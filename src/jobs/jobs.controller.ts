@@ -17,8 +17,9 @@ import { roles } from '../auth/roles.decorator';
 import { RolesList } from '../auth/roles.enum';
 import { RolesGuard } from '../auth/roles.guard';
 import { BaseAuditEntity } from 'src/common/entities/base-audit.entity';
+import { OrganizationGuard } from 'src/common/guards/organization.guard';
 
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(AuthGuard('jwt'), RolesGuard, OrganizationGuard)
 @Controller('jobs')
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
@@ -34,8 +35,13 @@ export class JobsController {
 
   @roles(RolesList.ADMIN, RolesList.DESIGNER, RolesList.PRODUCTION)
   @Get()
-  findAll() {
-    return this.jobsService.findAll();
+  findAll(@Req() req) {
+    return this.jobsService.findAll(req.user.organizationId);
+  }
+
+  @Get('dashboard')
+  getDashboard(@Req() req) {
+    return this.jobsService.getDashboard(req.user.organizationId);
   }
 
   @roles(RolesList.ADMIN, RolesList.DESIGNER, RolesList.PRODUCTION)
@@ -56,8 +62,8 @@ export class JobsController {
 
   @roles(RolesList.ADMIN)
   @Delete(':id')
-  deleteJob(@Param('id') id: number) {
-    return this.jobsService.deleteJob(+id);
+  deleteJob(@Param('id') id: number, @Req() req) {
+    return this.jobsService.deleteJob(+id, req.user.id);
   }
 }
 

@@ -10,7 +10,7 @@ export class UpdateJobDto {
   description?: string;
 
   @IsOptional()
-  @IsIn(['created', 'in_progress', 'completed'])
+  @IsIn(['created', 'assigned', 'in_progress', 'completed', 'delivered'])
   status?: string;
 
   @IsOptional()

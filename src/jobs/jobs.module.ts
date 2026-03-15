@@ -6,6 +6,7 @@ import { JobsController } from './jobs.controller';
 import { Job } from './entities/job.entity';
 import { JobHistory } from './entities/job-history.entity';
 import { User } from '../users/entities/users.entity';
+import { OrganizationGuard } from 'src/common/guards/organization.guard';
 
 @Module({
   imports: [
@@ -13,10 +14,14 @@ import { User } from '../users/entities/users.entity';
       Job,
       JobHistory,
       User,
+
     ]),
   ],
   controllers: [JobsController],
-  providers: [JobsService],
+  providers: [
+    JobsService,
+    OrganizationGuard,
+  ],
 
   
 })

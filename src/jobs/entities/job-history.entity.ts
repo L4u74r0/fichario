@@ -18,26 +18,20 @@ export class JobHistory {
   @JoinColumn({ name: 'job_id' })
   job: Job;
 
-  @Column()
+  @Column({type: 'varchar', length: 30})
   action: string; // 'created' | 'updated'
 
-  @Column({ nullable: true })
-  field: string; // 'status', 'assigned_to', etc
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  previous_status?: string; // 'status', 'assigned_to', etc
 
-  @Column({ nullable: true })
-  old_value: string;
-
-  @Column({ nullable: true })
-  new_value: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  new_status?: string; // 'status', 'assigned_to', etc
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'performed_by' })
-  performed_by: User;
+  @JoinColumn({ name: 'changed_by' })
+  changedBy: User;
 
-  @Column({ nullable: true })
-  comment: string;
-
-  @CreateDateColumn()
+  @CreateDateColumn({name: 'created_at'})
   created_at: Date;
 }
 

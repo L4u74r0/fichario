@@ -40,7 +40,7 @@ export class User {
   assigned_jobs: Job[];
 
   // Historial realizado
-  @OneToMany(() => JobHistory, (history) => history.performed_by)
+  @OneToMany(() => JobHistory, (history) => history.changedBy)
   history: JobHistory[];
 
   @ManyToOne(() => roles, { nullable: false })
